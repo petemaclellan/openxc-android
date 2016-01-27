@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.util.Log;
 
 import com.openxc.sinks.DataSinkException;
+import com.openxc.sinks.MqttBroadcastSink;
 import com.openxc.sinks.UploaderSink;
 import com.openxc.sinks.VehicleDataSink;
 import com.openxcplatform.enabler.R;
@@ -64,8 +65,9 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
                 }
 
                 try {
-                    mUploader = new UploaderSink(getContext(), path);
-                } catch(DataSinkException e) {
+                    //mUploader = new UploaderSink(getContext(), path);
+                    mUploader = new MqttBroadcastSink(getContext());
+                } catch(Exception e) {
                     Log.w(TAG, "Unable to add uploader sink", e);
                     return;
                 }
