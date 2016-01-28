@@ -52,7 +52,13 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
         //sketchy cast so we can extract fields
         SimpleVehicleMessage sv = (SimpleVehicleMessage) message;
         String key = sv.getName();
+
+        Class<?> newValueClass = sv.getValue().getClass();
         String newValue = sv.getValue().toString();
+        if (newValueClass.equals(String.class)) {
+            //wrap with quotes for JSON parser
+            newValue = "\"" + newValue + "\"";
+        }
 
         String result = currentVehicleStatus.put(key, newValue);
         if (!Objects.equals(result, newValue)) {
@@ -77,6 +83,8 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
             for (Map.Entry<String, String> kv: currentVehicleStatus.entrySet()) {
                 msg += "\"" + kv.getKey() + "\": " + kv.getValue() + ", ";
             }
+            //remove trailing comma
+            msg = msg.substring(0, msg.length() - 2);
             msg += "}}";
             vehicleData = msg;
         } catch (InterruptedException e) {
