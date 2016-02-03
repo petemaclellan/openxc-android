@@ -274,16 +274,27 @@ public class SettingsActivity extends PreferenceActivity {
     protected void initializeUploadingPreferences(PreferenceManager manager) {
         mUploadingPreference = (CheckBoxPreference) manager.findPreference(
                 getString(R.string.uploading_checkbox_key));
-        Preference uploadingPathPreference = manager.findPreference(
-                getString(R.string.uploading_path_key));
-        uploadingPathPreference.setOnPreferenceChangeListener(
-                mUploadingPathPreferenceListener);
+//        Preference uploadingPathPreference = manager.findPreference(
+//                getString(R.string.uploading_path_key));
+//        uploadingPathPreference.setOnPreferenceChangeListener(
+//                mUploadingPathPreferenceListener);
+        Preference vehicleMakePreference = manager.findPreference(
+                getString(R.string.vehicle_make_key));
+        vehicleMakePreference.setOnPreferenceChangeListener(mVehicleMakePreferenceListener);
+
+        Preference vehicleModelPreference = manager.findPreference(
+                getString(R.string.vehicle_model_key));
+        vehicleModelPreference.setOnPreferenceChangeListener(mVehicleModelPreferenceListener);
+
+        Preference vehicleYearPreference = manager.findPreference(
+                getString(R.string.vehicle_year_key));
+        vehicleYearPreference.setOnPreferenceChangeListener(mVehicleYearPreferenceListener);
 
         SharedPreferences preferences =
             PreferenceManager.getDefaultSharedPreferences(this);
-        updateSummary(uploadingPathPreference,
-                preferences.getString(
-                    getString(R.string.uploading_path_key), null));
+//        updateSummary(uploadingPathPreference,
+//                preferences.getString(
+//                    getString(R.string.uploading_path_key), null));
     }
 
     protected void initializeVehicleInterfacePreference(PreferenceManager manager) {
@@ -424,7 +435,7 @@ public class SettingsActivity extends PreferenceActivity {
         }
     }
 
-    protected void updateSummary(Preference preference, Object currentValue) {
+    protected void  updateSummary(Preference preference, Object currentValue) {
         String summary = null;
         if(currentValue != null) {
             summary = currentValue.toString();
@@ -484,6 +495,33 @@ public class SettingsActivity extends PreferenceActivity {
             return true;
         }
     };
+
+    private OnPreferenceChangeListener mVehicleMakePreferenceListener =
+            new OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference,
+                                                  Object newValue) {
+                    updateSummary(preference, newValue);
+                    return true;
+                }
+            };
+
+    private OnPreferenceChangeListener mVehicleModelPreferenceListener =
+            new OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference,
+                                                  Object newValue) {
+                    updateSummary(preference, newValue);
+                    return true;
+                }
+            };
+
+    private OnPreferenceChangeListener mVehicleYearPreferenceListener =
+            new OnPreferenceChangeListener() {
+                public boolean onPreferenceChange(Preference preference,
+                                                  Object newValue) {
+                    updateSummary(preference, newValue);
+                    return true;
+                }
+            };
 
 
     private Preference.OnPreferenceClickListener mTraceFileClickListener =

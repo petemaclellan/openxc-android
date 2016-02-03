@@ -9,6 +9,7 @@ import android.util.Log;
 
 import com.openxc.messages.SimpleVehicleMessage;
 import com.openxc.messages.VehicleMessage;
+import com.openxcplatform.R;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -30,10 +31,13 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     private Lock changeDetectLock = new ReentrantLock();
     private Condition valueChanged = changeDetectLock.newCondition();
 
-    public MqttBroadcastSink(Context context) {
+    public MqttBroadcastSink(Context context, String make, String model, String year) {
         super(context);
         this.context = context;
         currentVehicleStatus = new ConcurrentHashMap<>();
+        currentVehicleStatus.put("vehicle_make", make);
+        currentVehicleStatus.put("vehicle_model", model);
+        currentVehicleStatus.put("vehicle_year", year);
     }
 
     @Override

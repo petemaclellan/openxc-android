@@ -1,5 +1,6 @@
 package com.openxc.enabler.preferences;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
@@ -34,6 +35,9 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
             private int[] WATCHED_PREFERENCE_KEY_IDS = {
                 R.string.uploading_checkbox_key,
                 R.string.uploading_path_key,
+                R.string.vehicle_make_key,
+                R.string.vehicle_model_key,
+                R.string.vehicle_year_key
             };
 
             protected int[] getWatchedPreferenceKeyIds() {
@@ -47,6 +51,7 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
         };
     }
 
+    @SuppressLint("LongLogTag")
     private void setUploadingStatus(boolean enabled) {
         Log.i(TAG, "Setting uploading to " + enabled);
         if(enabled) {
@@ -66,7 +71,10 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
 
                 try {
                     //mUploader = new UploaderSink(getContext(), path);
-                    mUploader = new MqttBroadcastSink(getContext());
+                    String make = getPreferenceString(R.string.vehicle_make_key);
+                    String model = getPreferenceString(R.string.vehicle_make_key);
+                    String year = getPreferenceString(R.string.vehicle_year_key);
+                    mUploader = new MqttBroadcastSink(getContext(), make, model, year);
                 } catch(Exception e) {
                     Log.w(TAG, "Unable to add uploader sink", e);
                     return;
