@@ -32,14 +32,13 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     private ConcurrentHashMap<String, String> currentVehicleStatus;
     private Lock changeDetectLock = new ReentrantLock();
     private Condition valueChanged = changeDetectLock.newCondition();
-    private final VehicleManager vehicleManager;
 
-    public MqttBroadcastSink(Context context, VehicleManager vehicleManager,
+    public MqttBroadcastSink(Context context, String dongleId,
                              String make, String model, String year) {
         super(context);
         this.context = context;
-        this.vehicleManager = vehicleManager;
         currentVehicleStatus = new ConcurrentHashMap<>();
+        currentVehicleStatus.put("dongle_id", "\"" + dongleId + "\"");
         currentVehicleStatus.put("vehicle_make", "\"" + make + "\"");
         currentVehicleStatus.put("vehicle_model", "\"" + model + "\"");
         currentVehicleStatus.put("vehicle_year", year);
@@ -53,9 +52,6 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     @Override
     public void receive(VehicleMessage message) {
         extractData(message);
-        // since we are receiving messages, we have a valid dongle ID now
-        currentVehicleStatus.put("dongle_id",
-                "\"" + vehicleManager.getVehicleInterfaceDeviceId() + "\"");
         //The rest is handled by BroadcasterThread
     }
 
