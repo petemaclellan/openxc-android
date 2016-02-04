@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 
+import com.google.common.util.concurrent.RateLimiter;
+import com.openxc.VehicleManager;
 import com.openxc.messages.SimpleVehicleMessage;
 import com.openxc.messages.VehicleMessage;
 import com.openxcplatform.R;
@@ -30,13 +32,16 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     private ConcurrentHashMap<String, String> currentVehicleStatus;
     private Lock changeDetectLock = new ReentrantLock();
     private Condition valueChanged = changeDetectLock.newCondition();
+    private final VehicleManager vehicleManager;
 
-    public MqttBroadcastSink(Context context, String make, String model, String year) {
+    public MqttBroadcastSink(Context context, VehicleManager vehicleManager,
+                             String make, String model, String year) {
         super(context);
         this.context = context;
+        this.vehicleManager = vehicleManager;
         currentVehicleStatus = new ConcurrentHashMap<>();
-        currentVehicleStatus.put("vehicle_make", make);
-        currentVehicleStatus.put("vehicle_model", model);
+        currentVehicleStatus.put("vehicle_make", "\"" + make + "\"");
+        currentVehicleStatus.put("vehicle_model", "\"" + model + "\"");
         currentVehicleStatus.put("vehicle_year", year);
     }
 
@@ -48,6 +53,9 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     @Override
     public void receive(VehicleMessage message) {
         extractData(message);
+        // since we are receiving messages, we have a valid dongle ID now
+        currentVehicleStatus.put("dongle_id",
+                "\"" + vehicleManager.getVehicleInterfaceDeviceId() + "\"");
         //The rest is handled by BroadcasterThread
     }
 
@@ -109,11 +117,15 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
             mRunning = false;
         }
 
+        final RateLimiter rateLimiter = RateLimiter.create(10.0);
+
         @Override
         public void run() {
             while (mRunning) {
                 //this call will block until vehicle data changes and then set "vehicleData"
                 createJsonString();
+                //only allow 10 broadcasts per second
+                rateLimiter.acquire();
 
                 Intent intent = new Intent();
                 intent.setAction("com.pkg.perform.Ruby");

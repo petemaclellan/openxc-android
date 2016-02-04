@@ -24,21 +24,21 @@
             android:key="@string/vehicle_make_key"
             android:title="@string/vehicle_make_title"
             android:summary="@string/vehicle_make_summary"
-            android:defaultValue="Unknown"
+            android:defaultValue=""
             android:inputType="text" />
 
-        <EditTextPreference
+    <EditTextPreference
             android:key="@string/vehicle_model_key"
             android:title="@string/vehicle_model_title"
             android:summary="@string/vehicle_model_summary"
-            android:defaultValue="Unknown"
+            android:defaultValue=""
             android:inputType="text" />
 
-        <EditTextPreference
+    <EditTextPreference
             android:key="@string/vehicle_year_key"
             android:title="@string/vehicle_year_title"
             android:summary="@string/vehicle_year_summary"
-            android:defaultValue="Unknown"
+            android:defaultValue=""
             android:inputType="number" />
 
     </PreferenceCategory>

@@ -72,6 +72,10 @@ public class SettingsActivity extends PreferenceActivity {
     private PreferenceCategory mNetworkPreferences;
     private PreferenceCategory mTracePreferences;
 
+    private Preference vehicleMakePreference;
+    private Preference vehicleModelPreference;
+    private Preference vehicleYearPreference;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -274,27 +278,33 @@ public class SettingsActivity extends PreferenceActivity {
     protected void initializeUploadingPreferences(PreferenceManager manager) {
         mUploadingPreference = (CheckBoxPreference) manager.findPreference(
                 getString(R.string.uploading_checkbox_key));
-//        Preference uploadingPathPreference = manager.findPreference(
-//                getString(R.string.uploading_path_key));
-//        uploadingPathPreference.setOnPreferenceChangeListener(
-//                mUploadingPathPreferenceListener);
-        Preference vehicleMakePreference = manager.findPreference(
+        mUploadingPreference.setOnPreferenceChangeListener(mUploadingPreferenceListener);
+
+        vehicleMakePreference = manager.findPreference(
                 getString(R.string.vehicle_make_key));
         vehicleMakePreference.setOnPreferenceChangeListener(mVehicleMakePreferenceListener);
 
-        Preference vehicleModelPreference = manager.findPreference(
+        vehicleModelPreference = manager.findPreference(
                 getString(R.string.vehicle_model_key));
         vehicleModelPreference.setOnPreferenceChangeListener(mVehicleModelPreferenceListener);
 
-        Preference vehicleYearPreference = manager.findPreference(
+        vehicleYearPreference = manager.findPreference(
                 getString(R.string.vehicle_year_key));
         vehicleYearPreference.setOnPreferenceChangeListener(mVehicleYearPreferenceListener);
 
         SharedPreferences preferences =
             PreferenceManager.getDefaultSharedPreferences(this);
-//        updateSummary(uploadingPathPreference,
-//                preferences.getString(
-//                    getString(R.string.uploading_path_key), null));
+
+        // Update summaries when view is created
+        updateSummary(vehicleMakePreference,
+                preferences.getString(
+                    getString(R.string.vehicle_make_key), null));
+        updateSummary(vehicleModelPreference,
+                preferences.getString(
+                        getString(R.string.vehicle_model_key), null));
+        updateSummary(vehicleYearPreference,
+                preferences.getString(
+                        getString(R.string.vehicle_year_key), null));
     }
 
     protected void initializeVehicleInterfacePreference(PreferenceManager manager) {
@@ -477,21 +487,19 @@ public class SettingsActivity extends PreferenceActivity {
         }
     };
 
-    private OnPreferenceChangeListener mUploadingPathPreferenceListener =
-            new OnPreferenceChangeListener() {
-        public boolean onPreferenceChange(Preference preference,
-                Object newValue) {
-            String path = (String) newValue;
-            if(!UploaderSink.validatePath(path)) {
-                String error = "Invalid target URL \"" + path +
-                    "\" -- must be an absolute URL " +
-                    "with http:// prefix";
-                Toast.makeText(getApplicationContext(), error,
-                        Toast.LENGTH_SHORT).show();
-                Log.w(TAG, error);
+    private OnPreferenceChangeListener mUploadingPreferenceListener = new OnPreferenceChangeListener() {
+        @Override
+        public boolean onPreferenceChange(Preference preference, Object newValue) {
+            if (newValue == true &&
+                    (vehicleMakePreference.getSummary().equals("") ||
+                    vehicleModelPreference.getSummary().equals("") ||
+                    vehicleYearPreference.getSummary().equals(""))) {
+                Toast.makeText(getApplicationContext(),
+                        "Make, Model, and Year are required!", Toast.LENGTH_LONG)
+                        .show();
                 mUploadingPreference.setChecked(false);
+                return false; //prevent checkbox from being checked
             }
-            updateSummary(preference, newValue);
             return true;
         }
     };

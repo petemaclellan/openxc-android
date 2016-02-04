@@ -4,7 +4,9 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.openxc.VehicleManager;
 import com.openxc.sinks.DataSinkException;
 import com.openxc.sinks.MqttBroadcastSink;
 import com.openxc.sinks.UploaderSink;
@@ -55,32 +57,22 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
     private void setUploadingStatus(boolean enabled) {
         Log.i(TAG, "Setting uploading to " + enabled);
         if(enabled) {
-            String path = getPreferenceString(R.string.uploading_path_key);
-            if(!UploaderSink.validatePath(path)) {
-                String error = "Target URL in preferences not valid " +
-                        "-- not starting uploading a trace";
-                Log.w(TAG, error);
-                SharedPreferences.Editor editor = getPreferences().edit();
-                editor.putBoolean(getString(R.string.uploading_checkbox_key),
-                        false);
-                editor.commit();
-            } else {
-                if(mUploader != null) {
-                    stopUploading();
-                }
-
-                try {
-                    //mUploader = new UploaderSink(getContext(), path);
-                    String make = getPreferenceString(R.string.vehicle_make_key);
-                    String model = getPreferenceString(R.string.vehicle_make_key);
-                    String year = getPreferenceString(R.string.vehicle_year_key);
-                    mUploader = new MqttBroadcastSink(getContext(), make, model, year);
-                } catch(Exception e) {
-                    Log.w(TAG, "Unable to add uploader sink", e);
-                    return;
-                }
-                getVehicleManager().addSink(mUploader);
+            if(mUploader != null) {
+                stopUploading();
             }
+
+            String make = getPreferenceString(R.string.vehicle_make_key);
+            String model = getPreferenceString(R.string.vehicle_model_key);
+            String year = getPreferenceString(R.string.vehicle_year_key);
+
+            try {
+                VehicleManager vehicleManager = getVehicleManager();
+                mUploader = new MqttBroadcastSink(getContext(), vehicleManager, make, model, year);
+            } catch(Exception e) {
+                Log.w(TAG, "Unable to add uploader sink", e);
+                return;
+            }
+            getVehicleManager().addSink(mUploader);
         } else {
             stopUploading();
         }
