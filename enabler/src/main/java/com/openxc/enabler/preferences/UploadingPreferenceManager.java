@@ -61,17 +61,18 @@ public class UploadingPreferenceManager extends VehiclePreferenceManager {
                 stopUploading();
             }
 
-            while (!getVehicleManager().isViConnected()) {
-                //wait for VI to connect
+            String dongleId = "trace-playback";
+
+            if (getVehicleManager().isViConnected()) {
+                //VI is connected, use MAC address
+                dongleId = getVehicleManager().getVehicleInterfaceDeviceId();
             }
 
-            String dongleId = getVehicleManager().getVehicleInterfaceDeviceId();
             String make = getPreferenceString(R.string.vehicle_make_key);
             String model = getPreferenceString(R.string.vehicle_model_key);
             String year = getPreferenceString(R.string.vehicle_year_key);
 
             try {
-                VehicleManager vehicleManager = getVehicleManager();
                 mUploader = new MqttBroadcastSink(getContext(), dongleId, make, model, year);
             } catch(Exception e) {
                 Log.w(TAG, "Unable to add uploader sink", e);
