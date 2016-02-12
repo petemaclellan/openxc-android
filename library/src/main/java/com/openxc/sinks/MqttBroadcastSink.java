@@ -1,10 +1,13 @@
 package com.openxc.sinks;
 
 import android.annotation.TargetApi;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Build;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.common.util.concurrent.RateLimiter;
@@ -32,17 +35,33 @@ public class MqttBroadcastSink extends ContextualVehicleDataSink {
     private ConcurrentHashMap<String, String> currentVehicleStatus;
     private Lock changeDetectLock = new ReentrantLock();
     private Condition valueChanged = changeDetectLock.newCondition();
+    private final String TAG = "MQTTBroadcastSink";
 
     public MqttBroadcastSink(Context context, String dongleId,
                              String make, String model, String year) {
         super(context);
         this.context = context;
+        Log.d(TAG, "adding sink with dong id = " + dongleId);
         currentVehicleStatus = new ConcurrentHashMap<>();
         currentVehicleStatus.put("dongle_id", "\"" + dongleId + "\"");
         currentVehicleStatus.put("vehicle_make", "\"" + make + "\"");
         currentVehicleStatus.put("vehicle_model", "\"" + model + "\"");
         currentVehicleStatus.put("vehicle_year", year);
+
+        LocalBroadcastManager.getInstance(context).registerReceiver(dongReceiver,
+                new IntentFilter("set-dongle-id"));
     }
+
+    private BroadcastReceiver dongReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (intent.getExtras().containsKey("dongleId")) {
+                String dongleId = intent.getExtras().getString("dongleId");
+                Log.d("receiver", "Dong broadcast received.  New id = " + dongleId);
+                currentVehicleStatus.put("dongle_id", "\"" + dongleId + "\"");
+            }
+        }
+    };
 
     @Override
     public void stop() {

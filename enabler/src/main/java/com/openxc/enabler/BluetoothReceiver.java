@@ -4,6 +4,7 @@ import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.openxc.VehicleManager;
@@ -27,6 +28,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
             if(intent.getAction().compareTo(
                         BluetoothDevice.ACTION_ACL_CONNECTED) == 0){
                 Log.d(TAG, "A Bluetooth OpenXC VI connected: " + bluetoothDevice.getName());
+                Intent dongleChangedIntent = new Intent("set-dongle-id");
+                dongleChangedIntent.putExtra("dongleId", bluetoothDevice.getAddress());
+                LocalBroadcastManager.getInstance(context).sendBroadcast(dongleChangedIntent);
                 context.startService(new Intent(context, VehicleManager.class));
                 context.startService(new Intent(context,
                             PreferenceManagerService.class));
